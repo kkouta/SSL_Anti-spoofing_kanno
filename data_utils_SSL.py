@@ -8,7 +8,7 @@ from torch.utils.data import Dataset
 from RawBoost import ISD_additive_noise,LnL_convolutive_noise,SSI_additive_noise,normWav
 from random import randrange
 import random
-
+import warnings
 
 ___author__ = "Hemlata Tak"
 __email__ = "tak@eurecom.fr"
@@ -73,6 +73,8 @@ class Dataset_ASVspoof2019_train(Dataset):
 	def __getitem__(self, index):
             
             utt_id = self.list_IDs[index]
+            warnings.filterwarnings("ignore", message="PySoundFile failed")
+            warnings.filterwarnings("ignore", category=FutureWarning)
             X,fs = librosa.load(self.base_dir+'flac/'+utt_id+'.flac', sr=16000) 
             Y=process_Rawboost_feature(X,fs,self.args,self.algo)
             X_pad= pad(Y,self.cut)
@@ -98,6 +100,8 @@ class Dataset_ASVspoof2021_eval(Dataset):
 	def __getitem__(self, index):
             
             utt_id = self.list_IDs[index]
+            warnings.filterwarnings("ignore", message="PySoundFile failed")
+            warnings.filterwarnings("ignore", category=FutureWarning)
             X, fs = librosa.load(self.base_dir+'flac/'+utt_id+'.flac', sr=16000)
             X_pad = pad(X,self.cut)
             x_inp = Tensor(X_pad)

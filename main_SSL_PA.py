@@ -105,7 +105,7 @@ def train_epoch(train_loader, model, lr,optim, device):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='ASVspoof2021 baseline system')
     # Dataset
-    parser.add_argument('--database_path', type=str, default='/your/path/to/data/ASVspoof_database/LA/', help='Change this to user\'s full directory address of LA database (ASVspoof2019- for training & development (used as validation), ASVspoof2021 for evaluation scores). We assume that all three ASVspoof 2019 LA train, LA dev and ASVspoof2021 LA eval data folders are in the same database_path directory.')
+    parser.add_argument('--database_path', type=str, default='/home/audio/ASVspoof2019/PA/', help='Change this to user\'s full directory address of LA database (ASVspoof2019- for training & development (used as validation), ASVspoof2021 for evaluation scores). We assume that all three ASVspoof 2019 LA train, LA dev and ASVspoof2021 LA eval data folders are in the same database_path directory.')
     '''
     % database_path/
     %   |- LA
@@ -117,7 +117,7 @@ if __name__ == '__main__':
  
     '''
 
-    parser.add_argument('--protocols_path', type=str, default='database/', help='Change with path to user\'s LA database protocols directory address')
+    parser.add_argument('--protocols_path', type=str, default='/home/audio/ASVspoof2019/PA/', help='Change with path to user\'s LA database protocols directory address')
     '''
     % protocols_path/
     %   |- ASVspoof_LA_cm_protocols
@@ -218,7 +218,7 @@ if __name__ == '__main__':
     assert track in ['LA', 'PA','DF'], 'Invalid track given'
 
     #database
-    prefix      = 'ASVspoof_{}'.format(track)
+    prefix      = 'ASVspoof2019_{}'.format(track)
     prefix_2019 = 'ASVspoof2019.{}'.format(track)
     prefix_2021 = 'ASVspoof2021.{}'.format(track)
     
