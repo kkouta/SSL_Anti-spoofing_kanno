@@ -81,21 +81,32 @@ def train_epoch(train_loader, model, lr,optim, device):
     weight = torch.FloatTensor([0.1, 0.9]).to(device)
     criterion = nn.CrossEntropyLoss(weight=weight)
     
-    for batch_x, batch_y in train_loader:
+    weight_distance = torch.FloatTensor([1.0, 2.08, 1.22, 2.81]).to(device)
+    criterion_distance = nn.CrossEntropyLoss(weight=weight_distance)
+    
+    weight_device = torch.FloatTensor([1.0, 1.0, 1.0, 2.15]).to(device)
+    criterion_device = nn.CrossEntropyLoss(weight=weight_device)
+    
+    for batch_x, batch_y ,PA_distance,PA_device in train_loader:
        
         batch_size = batch_x.size(0)
         num_total += batch_size
         
         batch_x = batch_x.to(device)
         batch_y = batch_y.view(-1).type(torch.int64).to(device)
-        batch_out = model(batch_x)
+        PA_distance = PA_distance.view(-1).type(torch.int64).to(device)
+        PA_device = PA_device.view(-1).type(torch.int64).to(device)
+        
+        batch_out,distance_out,device_out = model(batch_x)
         
         batch_loss = criterion(batch_out, batch_y)
-        
-        running_loss += (batch_loss.item() * batch_size)
+        distance_loss = criterion_distance(distance_out, PA_distance)
+        device_loss = criterion_device(device_out, PA_device)
+        sum_loss = batch_loss + distance_loss + device_loss
+        running_loss += (sum_loss.item() * batch_size)
        
         optimizer.zero_grad()
-        batch_loss.backward()
+        sum_loss.backward()
         optimizer.step()
        
     running_loss /= num_total
@@ -262,25 +273,27 @@ if __name__ == '__main__':
 
      
     # define train dataloader
-    d_label_trn,file_train = genSpoof_list( dir_meta =  os.path.join(args.protocols_path+'{}_cm_protocols/{}.cm.train.trn.txt'.format(prefix,prefix_2019)),is_train=True,is_eval=False)
+    d_label_trn,file_train,PA_distance,PA_device = genSpoof_list( dir_meta =  os.path.join(args.protocols_path+'{}_cm_protocols/{}.cm.train.trn.txt'.format(prefix,prefix_2019)),is_train=True,is_eval=False)
     
     print('no. of training trials',len(file_train))
     
-    train_set=Dataset_ASVspoof2019_train(args,list_IDs = file_train,labels = d_label_trn,base_dir = os.path.join(args.database_path+'{}_{}_train/'.format(prefix_2019.split('.')[0],args.track)),algo=args.algo)
+    train_set=Dataset_ASVspoof2019_train(args,list_IDs = file_train,labels = d_label_trn,PA_distance=PA_distance,PA_device=PA_device,base_dir = os.path.join(args.database_path+'{}_{}_train/'.format(prefix_2019.split('.')[0],args.track)),algo=args.algo)
     
     train_loader = DataLoader(train_set, batch_size=args.batch_size,num_workers=8, shuffle=True,drop_last = True)
     
-    del train_set,d_label_trn
+    del train_set,d_label_trn,PA_distance,PA_device
     
 
     # define validation dataloader
 
-    d_label_dev,file_dev = genSpoof_list( dir_meta =  os.path.join(args.protocols_path+'{}_cm_protocols/{}.cm.dev.trl.txt'.format(prefix,prefix_2019)),is_train=False,is_eval=False)
+    d_label_dev,file_dev,PA_distance,PA_device  = genSpoof_list( dir_meta =  os.path.join(args.protocols_path+'{}_cm_protocols/{}.cm.dev.trl.txt'.format(prefix,prefix_2019)),is_train=False,is_eval=False)
     
     print('no. of validation trials',len(file_dev))
     
     dev_set = Dataset_ASVspoof2019_train(args,list_IDs = file_dev,
 		labels = d_label_dev,
+        PA_distance=PA_distance,
+        PA_device=PA_device,
 		base_dir = os.path.join(args.database_path+'{}_{}_dev/'.format(prefix_2019.split('.')[0],args.track)),algo=args.algo)
     dev_loader = DataLoader(dev_set, batch_size=args.batch_size,num_workers=8, shuffle=False)
     del dev_set,d_label_dev

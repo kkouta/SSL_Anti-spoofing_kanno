@@ -9,6 +9,7 @@ from RawBoost import ISD_additive_noise,LnL_convolutive_noise,SSI_additive_noise
 from random import randrange
 import random
 import warnings
+import pdb
 
 ___author__ = "Hemlata Tak"
 __email__ = "tak@eurecom.fr"
@@ -18,29 +19,44 @@ def genSpoof_list( dir_meta,is_train=False,is_eval=False):
     
     d_meta = {}
     file_list=[]
+    PA_distance = []
+    PA_device = []
+    PA_env = {'A': 0, 'B': 1, 'C': 2, '-':3}
     with open(dir_meta, 'r') as f:
          l_meta = f.readlines()
-
     if (is_train):
         for line in l_meta:
-             _,key,_,_,label = line.strip().split()
-             
-             file_list.append(key)
-             d_meta[key] = 1 if label == 'bonafide' else 0
-        return d_meta,file_list
+            _,key,_,env,label = line.strip().split()
+            env_values = [PA_env[char] for char in env]  # リストに変換
+            # PA_distance と PA_device の計算
+            pa_distance = env_values[0] if len(env_values) > 1 else 3
+            pa_device = env_values[1] if len(env_values) > 1 else 3
+            PA_distance.append(pa_distance)
+            PA_device.append(pa_device)
+            
+            file_list.append(key)
+            d_meta[key] = 1 if label == 'bonafide' else 0
+            # pdb.set_trace()
+        return d_meta,file_list,PA_distance,PA_device
     
     elif(is_eval):
         for line in l_meta:
             key= line.strip()
             file_list.append(key)
         return file_list
-    else:
+    else:#dev用のデータセット
         for line in l_meta:
-             _,key,_,_,label = line.strip().split()
-             
-             file_list.append(key)
-             d_meta[key] = 1 if label == 'bonafide' else 0
-        return d_meta,file_list
+            _,key,_,env,label = line.strip().split()
+            env_values = [PA_env[char] for char in env]  # リストに変換
+            # PA_distance と PA_device の計算
+            pa_distance = env_values[0] if len(env_values) > 1 else 3
+            pa_device = env_values[1] if len(env_values) > 1 else 3
+            PA_distance.append(pa_distance)
+            PA_device.append(pa_device)
+            
+            file_list.append(key)
+            d_meta[key] = 1 if label == 'bonafide' else 0
+        return d_meta,file_list,PA_distance,PA_device
 
 
 
@@ -55,7 +71,7 @@ def pad(x, max_len=64600):
 			
 
 class Dataset_ASVspoof2019_train(Dataset):
-	def __init__(self,args,list_IDs, labels, base_dir,algo):
+	def __init__(self,args,list_IDs, labels,PA_distance,PA_device, base_dir,algo):
             '''self.list_IDs	: list of strings (each string: utt key),
                self.labels      : dictionary (key: utt key, value: label integer)'''
                
@@ -65,6 +81,8 @@ class Dataset_ASVspoof2019_train(Dataset):
             self.algo=algo
             self.args=args
             self.cut=64600 # take ~4 sec audio (64600 samples)
+            self.PA_distance=PA_distance
+            self.PA_device=PA_device
 
 	def __len__(self):
            return len(self.list_IDs)
@@ -80,8 +98,10 @@ class Dataset_ASVspoof2019_train(Dataset):
             X_pad= pad(Y,self.cut)
             x_inp= Tensor(X_pad)
             target = self.labels[utt_id]
+            PA_distance = self.PA_distance[index]
+            PA_device = self.PA_device[index]
             
-            return x_inp, target
+            return x_inp, target, PA_distance, PA_device
             
             
 class Dataset_ASVspoof2021_eval(Dataset):

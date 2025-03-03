@@ -7,7 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import Tensor
 import fairseq
-
+import pdb
 
 ___author__ = "Hemlata Tak"
 __email__ = "tak@eurecom.fr"
@@ -500,8 +500,10 @@ class Model(nn.Module):
 
         self.pool_hS2 = GraphPool(pool_ratios[2], gat_dims[1], 0.3)
         self.pool_hT2 = GraphPool(pool_ratios[2], gat_dims[1], 0.3)
-        
+        # pdb.set_trace()
         self.out_layer = nn.Linear(5 * gat_dims[1], 2)
+        self.out_PA_distanve=nn.Linear(5 * gat_dims[1], 4)
+        self.out_PA_device=nn.Linear(5 * gat_dims[1], 4)
 
     def forward(self, x):
         #-------pre-trained Wav2vec model fine tunning ------------------------##
@@ -594,4 +596,7 @@ class Model(nn.Module):
         last_hidden = self.drop(last_hidden)
         output = self.out_layer(last_hidden)
         
-        return output
+        out_PA_distanve=self.out_PA_distanve(last_hidden)
+        out_PA_device=self.out_PA_device(last_hidden)
+        
+        return output,out_PA_distanve,out_PA_device
