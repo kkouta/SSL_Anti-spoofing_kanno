@@ -42,6 +42,13 @@ To train the model run:
 ```
 CUDA_VISIBLE_DEVICES=0 main_SSL_LA.py --track=LA --lr=0.000001 --batch_size=14 --loss=WCE  
 ```
+
+バックエンド処理＆メモ
+
+```
+nohup bash -c 'CUDA_VISIBLE_DEVICES=0 python main_SSL_PA.py --track=PA --lr=0.000001 --batch_size=14 --loss=WCE' > PA_multitask_0303.log 2>&1 &
+```
+
 ### Testing LA and DF
 
 To evaluate your own model on LA and DF evaluation dataset:
@@ -50,6 +57,12 @@ CUDA_VISIBLE_DEVICES=0 python main_SSL_LA.py --track=LA --is_eval --eval --model
 
 CUDA_VISIBLE_DEVICES=0 python main_SSL_DF.py --track=DF --is_eval --eval --model_path='/path/to/your/best_SSL_model_LA.pth' --eval_output='eval_CM_scores_file_SSL_DF.txt'
 ```
+
+PAモデルの評価
+```
+CUDA_VISIBLE_DEVICES=0 python main_SSL_PA.py --track=PA --is_eval --eval --model_path='/home/kkouta/SSL_Anti-spoofing/models/model_single_PA/model_PA_WCE_100_14_1e-06/epoch_99.pth' --eval_output='eval_CM_scores_file_SSL_PA.txt'
+```
+
 
 We also provide a pre-trained models. To use it you can run: 
 

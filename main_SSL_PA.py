@@ -24,13 +24,13 @@ def evaluate_accuracy(dev_loader, model, device):
     model.eval()
     weight = torch.FloatTensor([0.1, 0.9]).to(device)
     criterion = nn.CrossEntropyLoss(weight=weight)
-    for batch_x, batch_y in dev_loader:
+    for batch_x, batch_y ,PA_distance,PA_device in dev_loader:
         
         batch_size = batch_x.size(0)
         num_total += batch_size
         batch_x = batch_x.to(device)
         batch_y = batch_y.view(-1).type(torch.int64).to(device)
-        batch_out = model(batch_x)
+        batch_out,distance_out,device_out = model(batch_x)
         
         batch_loss = criterion(batch_out, batch_y)
         val_loss += (batch_loss.item() * batch_size)
@@ -234,8 +234,9 @@ if __name__ == '__main__':
     prefix_2021 = 'ASVspoof2021.{}'.format(track)
     
     #define model saving path
-    model_tag = 'model_{}_{}_{}_{}_{}'.format(
-        track, args.loss, args.num_epochs, args.batch_size, args.lr)
+    # model_tag = 'model_{}_{}_{}_{}_{}_'.format(
+        # track, args.loss, args.num_epochs, args.batch_size, args.lr)
+    model_tag = 'model_PA_WCE_100_14_1e-06_multitask'
     if args.comment:
         model_tag = model_tag + '_{}'.format(args.comment)
     model_save_path = os.path.join('models', model_tag)
@@ -305,7 +306,11 @@ if __name__ == '__main__':
     num_epochs = args.num_epochs
     writer = SummaryWriter('logs/{}'.format(model_tag))
     
-    for epoch in range(num_epochs):
+    for epoch in range(31,num_epochs):
+        model_file = os.path.join(model_save_path, 'epoch_{}.pth'.format(epoch))
+        if os.path.exists(model_file):
+            print('Model file {} already exists. Skipping epoch {}.'.format(model_file, epoch))
+            continue
         
         running_loss = train_epoch(train_loader,model, args.lr,optimizer, device)
         val_loss = evaluate_accuracy(dev_loader, model, device)
