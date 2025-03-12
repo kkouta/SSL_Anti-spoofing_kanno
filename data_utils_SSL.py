@@ -31,7 +31,10 @@ def genSpoof_list( dir_meta,is_train=False,is_eval=False):
     
     elif(is_eval):
         for line in l_meta:
-            key= line.strip()
+            _,key,_,_,_,_,_,_,_,_,_,_ = line.strip().split()
+             
+            # file_list.append(key)
+            # key= line.strip()
             file_list.append(key)
         return file_list
     else:
@@ -102,7 +105,7 @@ class Dataset_ASVspoof2021_eval(Dataset):
             utt_id = self.list_IDs[index]
             warnings.filterwarnings("ignore", message="PySoundFile failed")
             warnings.filterwarnings("ignore", category=FutureWarning)
-            X, fs = librosa.load(self.base_dir+'flac/'+utt_id+'.flac', sr=16000)
+            X, fs = librosa.load(self.base_dir+utt_id+'.flac', sr=16000)
             X_pad = pad(X,self.cut)
             x_inp = Tensor(X_pad)
             return x_inp,utt_id  
